@@ -1,17 +1,18 @@
 import { useState } from 'react';
 import { Button, Label, Wrapper } from './Phonebook.styled';
-import PropTypes from 'prop-types';
 import { useDispatch, useSelector } from 'react-redux';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import { addUser } from 'redux/contactsSlice';
+import { selectContacts } from 'redux/selectors';
+import { addContact } from 'redux/thunk';
+import { Loader } from 'components/Loader/Loader';
 
 
 export const Phonebook = () => {
   const [name, setName] = useState('');
   const [number, setNumber] = useState('');
   const dispatch = useDispatch();
-  const contacts = useSelector(state => state.contacts);
+  const {items: contacts, isAdding} = useSelector(selectContacts);
   const handleOnChange = ({ target: { name, value } }) => {
     switch (name) {
       case 'name':
@@ -34,7 +35,7 @@ export const Phonebook = () => {
     if (arrayOfNames.includes(name.toLowerCase())) {
       return toast.warn(`${name} is already in contacts.`);
     } else {
-      dispatch(addUser(name, number));
+      dispatch(addContact({name, number}));
     }
     reset();
   };
@@ -73,17 +74,10 @@ export const Phonebook = () => {
           />
         </Label>
 
-        <Button type="submit">Add contact</Button>
+        <Button type="submit" disabled={isAdding}>
+          {isAdding ? <Loader /> : 'Add contact'}
+        </Button>
       </form>
     </Wrapper>
   );
-};
-
-Phonebook.propTypes = {
-  data: PropTypes.arrayOf(
-    PropTypes.shape({
-      name: PropTypes.string.isRequired,
-    })
-  ),
-  onSubmit: PropTypes.func,
 };
